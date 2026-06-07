@@ -2,14 +2,15 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
-		<title>&#1050;&#1088;&#1072;&#1089;&#1085;&#1086;&#1074;&#1080;&#1096;&#1077;&#1088;&#1089;&#1082;</title>
+		<title>Красновишерск</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-status-bar-style" content="black" />
-		<meta property="og:title" content="&#1050;&#1088;&#1072;&#1089;&#1085;&#1086;&#1074;&#1080;&#1096;&#1077;&#1088;&#1089;&#1082;">
-		<meta property="og:description" content="&#1050;&#1088;&#1072;&#1089;&#1085;&#1086;&#1074;&#1080;&#1096;&#1077;&#1088;&#1089;&#1082; &#1089; &#1074;&#1099;&#1089;&#1086;&#1090;&#1099; ">
+		<meta property="og:title" content="Красновишерск">
+		<meta property="og:description" content="Красновишерск с высоты ">
 		<meta name="mobile-web-app-capable" content="yes" />
 		<meta property="og:image" content="preview.jpg">
+		
 		<style type="text/css" title="Default">
 			/* fullscreen */
 			html {
@@ -30,20 +31,19 @@
 				height: 0.75em;
 			}
 			::-webkit-scrollbar-thumb {
-				background-color:  rgba(255,255,255,0.5);
+				background-color: rgba(255,255,255,0.5); /* ИСПРАВЛЕНО: жестко вычищен скрытый пробел */
 			}
 		</style>
 	</head>
 	<body>
-<!-- - - - - - - 8<- - - - - - cut here - - - - - 8<- - - - - - - -->
-		<script type="text/javascript" src="pano2vr_player.js?ts=40662407">
-		</script>
-		<script type="text/javascript" src="skin.js?ts=40662407">
-		</script>
+<script type="text/javascript" src="pano2vr_player.js?ts=40662407"></script>
+		<script type="text/javascript" src="skin.js?ts=40662407"></script>
 		<script src="3rdparty/lottie/lottie.min.js"></script>
+		
 		<div id="container" style="width:100%;height:100%;overflow:hidden;">
-		<br>Loading...<br><br>
+			<br>Loading...<br><br>
 		</div>
+		
 		<script type="text/javascript">
 		function parseParams(paramsString, params) {
 			paramsString = paramsString.substring(1);
@@ -74,7 +74,7 @@
 		if (("onhashchange" in window) && (!(/MSIE (\d+\.\d+);/.test(navigator.userAgent)))) {
 			window.onhashchange = function () {
 				parseParams(window.location.hash, params);
-				pano.openNext('{' + params.startNode + '}', params.startView);
+				if (window.pano) pano.openNext('{' + params.startNode + '}', params.startView);
 			}
 		} else {
 			var lastHash = window.location.hash;
@@ -82,50 +82,61 @@
 				if (window.location.hash != lastHash) {
 					lastHash = window.location.hash;
 					parseParams(window.location.hash, params);
-					pano.openNext('{' + params.startNode + '}', params.startView);
+					if (window.pano) pano.openNext('{' + params.startNode + '}', params.startView);
 				}
 			}, 100);
 		}
-			// create the panorama player with the container
-			pano=new pano2vrPlayer("container");
+		
+			// Создаем плеер
+			pano = new pano2vrPlayer("container");
 			pano.startNode = startNode;
 			pano.startView = startView;
-			pano.setQueryParameter("ts=40662407")
-			// add the skin object
-			skin=new pano2vrSkin(pano);
-			// load the configuration
-			window.addEventListener("load", function() {
-				pano.readConfigUrlAsync("pano.xml?ts=40662407");
-			});
+			pano.setQueryParameter("ts=40662407");
+			
+			// Подключаем скин обратно, так как панорама сжата до 632px и переведена в JPEG
+			skin = new pano2vrSkin(pano);
+			
+			// Оптимизация путей для iOS внутри iframe: 
+			// Генерируем абсолютный URL до xml-файла на основе текущего размещения pano.html
+			var baseHref = window.location.href.split('#')[0].split('?')[0];
+			var xmlUrl = baseHref.substring(0, baseHref.lastIndexOf('/')) + "/pano.xml?ts=40662407";
+
+			// Безопасный запуск чтения конфигурации через микро-таймаут
+			setTimeout(function() {
+				pano.readConfigUrlAsync(xmlUrl);
+			}, 100);
+
+			// Фикс размеров экрана под iOS
 			if (window.navigator.userAgent.match(/Safari/i)) {
-				// fix for white borders, rotation on iPhone
 				function iosHfix(e) {
 					window.scrollTo(0, 1);
-					var container=document.getElementById("container");
-					var oh=container.offsetHeight;
+					var container = document.getElementById("container");
+					if (!container) return;
+					var oh = container.offsetHeight;
 					document.documentElement.style.setProperty('height', '100vh');
-					if (oh!=container.offsetHeight) {
-						container.style.setProperty('height',"100%");
+					if (oh != container.offsetHeight) {
+						container.style.setProperty('height', "100%");
 					} else {
-						container.style.setProperty('height',window.innerHeight+"px");
+						container.style.setProperty('height', window.innerHeight + "px");
 					}
 					window.scrollTo(0, 0);
-					pano.setViewerSize(container.offsetWidth, container.offsetHeight);
+					if (pano && typeof pano.setViewerSize === 'function') {
+						pano.setViewerSize(container.offsetWidth, container.offsetHeight);
+					}
 				};
-				setTimeout(iosHfix,0);
-				setTimeout(iosHfix,100);
+				setTimeout(iosHfix, 50);
+				setTimeout(iosHfix, 200);
 				window.addEventListener("resize", function() {
-					setTimeout(iosHfix,0);
-					// hide toolbar on iPad happens with a delay
-					setTimeout(iosHfix,500);
-					setTimeout(iosHfix,1000);
-					setTimeout(iosHfix,2000);
+					setTimeout(iosHfix, 50);
+					setTimeout(iosHfix, 500);
 				});
 			}
 		</script>
+		
+		<script async src="browser.min.js"></script>
+		
 		<noscript>
 			<p><b>Please enable Javascript!</b></p>
 		</noscript>
-<!-- - - - - - - 8<- - - - - - cut here - - - - - 8<- - - - - - - -->
-	</body>
+</body>
 </html>
