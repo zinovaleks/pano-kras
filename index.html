@@ -1,46 +1,60 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Красновишерск с высоты</title>
-    <style>
-        html, body { 
-            margin: 0; 
-            padding: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: #000000; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center;
-            font-family: -apple-system, system-ui, BlinkMacSystemFont, Roboto, sans-serif;
-        }
-        
-        .btn-view {
-            display: inline-block;
-            background: #2ed573; 
-            color: #ffffff; 
-            text-decoration: none; 
-            padding: 18px 36px;
-            font-size: 20px; 
-            font-weight: 600; 
-            border-radius: 14px; 
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(46, 213, 115, 0.4); 
-            transition: transform 0.1s;
-            -webkit-tap-highlight-color: rgba(0,0,0,0);
-            text-align: center;
-        }
+	<head>
+		<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+		<title>Красновишерск</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+		<style type="text/css" title="Default">
+			html { height:100%; }
+			body { height:100%; margin: 0px; background: black; color: white; overflow:hidden; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); }
+			::-webkit-scrollbar { background-color: rgba(0,0,0,0.5); width: 0.75em; height: 0.75em; }
+			::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.5); }
+		</style>
+		<script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+	</head>
+	<body>
+		<script type="text/javascript" src="pano2vr_player.js?ts=40662407"></script>
+		<script type="text/javascript" src="skin.js?ts=40662407"></script>
+		<script src="3rdparty/lottie/lottie.min.js"></script>
+		<script async src="browser.min.js"></script>
 
-        .btn-view:active { 
-            transform: scale(0.95); 
-        }
-    </style>
-</head>
-<body>
+		<div id="container" style="width:100%;height:100%;overflow:hidden;"></div>
+		
+		<script type="text/javascript">
+			// Инициализация VK Bridge
+			if (typeof vkBridge !== 'undefined') {
+				vkBridge.send('VKWebAppInit').catch(e => console.error(e));
+			}
 
-    <a href="pano.html" target="_blank" class="btn-view">Посмотреть панораму</a>
+			// Старт плеера
+			pano = new pano2vrPlayer("container");
+			pano.setQueryParameter("ts=40662407");
+			skin = new pano2vrSkin(pano);
+			
+			// Загрузка конфига
+			pano.readConfigUrlAsync("pano.xml?ts=40662407");
 
-</body>
+			// Адаптивность для iOS
+			if (window.navigator.userAgent.match(/Safari/i)) {
+				function iosHfix(e) {
+					window.scrollTo(0, 1);
+					var container = document.getElementById("container");
+					if (!container) return;
+					document.documentElement.style.setProperty('height', '100vh');
+					container.style.setProperty('height', window.innerHeight + "px");
+					window.scrollTo(0, 0);
+					if (pano && typeof pano.setViewerSize === 'function') {
+						pano.setViewerSize(container.offsetWidth, container.offsetHeight);
+					}
+				};
+				setTimeout(iosHfix, 100);
+				window.addEventListener("resize", function() {
+					setTimeout(iosHfix, 100);
+					setTimeout(iosHfix, 500);
+				});
+			}
+		</script>
+	</body>
 </html>
