@@ -12,10 +12,11 @@
 			::-webkit-scrollbar { background-color: rgba(0,0,0,0.5); width: 0.75em; height: 0.75em; }
 			::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.5); }
 		</style>
+		
 		<script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
 	</head>
 	<body>
-		<script type="text/javascript" src="pano2vr_player.js?ts=40662407"></script>
+<script type="text/javascript" src="pano2vr_player.js?ts=40662407"></script>
 		<script type="text/javascript" src="skin.js?ts=40662407"></script>
 		<script src="3rdparty/lottie/lottie.min.js"></script>
 		<script async src="browser.min.js"></script>
@@ -23,20 +24,22 @@
 		<div id="container" style="width:100%;height:100%;overflow:hidden;"></div>
 		
 		<script type="text/javascript">
-			// Инициализация VK Bridge
+			// Теперь инициализация отработает без ошибок
 			if (typeof vkBridge !== 'undefined') {
-				vkBridge.send('VKWebAppInit').catch(e => console.error(e));
+				vkBridge.send('VKWebAppInit')
+					.then((data) => { if (data.result) console.log("VK Bridge запущен"); })
+					.catch(e => console.error("Ошибка VK Bridge:", e));
 			}
 
-			// Старт плеера
+			// Старт плеера Pano2VR
 			pano = new pano2vrPlayer("container");
 			pano.setQueryParameter("ts=40662407");
 			skin = new pano2vrSkin(pano);
 			
-			// Загрузка конфига
+			// Загрузка конфига панорамы
 			pano.readConfigUrlAsync("pano.xml?ts=40662407");
 
-			// Адаптивность для iOS
+			// Адаптивность размеров под iOS
 			if (window.navigator.userAgent.match(/Safari/i)) {
 				function iosHfix(e) {
 					window.scrollTo(0, 1);
